@@ -3,17 +3,25 @@ import os
 
 def pathMaker ():
     home = os.path.expanduser('~')
-    print(home)
-    docsHome = os.path.join(home, 'Documents',"MidiCreator")
-    print(docsHome)
-    folderCheck = os.path.isdir(docsHome)
-    if not (folderCheck):
-        print("You do not have a MidiCreator folder. Making one now")
-        os.mkdir(docsHome)
-    return docsHome
+    # print(home)
+    funcDocsHome = os.path.join(home, 'Documents', 'MidiCreator')
+    # print(funcDocsHome)
+    funcTempHome = os.path.join(funcDocsHome,'temp files')
+    folderCheck = os.path.isdir(funcDocsHome)
+    folderCheck2 = os.path.isdir(funcTempHome)
+    if not folderCheck:
+        print("You do not have a MidiCreator folder and the appropriate subfolder. Making one now")
+        os.mkdir(funcDocsHome)
+        os.mkdir(funcTempHome)
+        folderCheck2 = True
+    if not folderCheck2:
+        print("You are missing a subfolder. Gonna fix that.")
+        os.mkdir(funcTempHome)
+    print("You can find the output folder at: " + funcDocsHome)
+    return funcDocsHome
 
 
-def midiMaker ():
+def midiMaker (tempHome):
     # create your MIDI object
     mf = MIDIFile(1)     # only 1 track
     track = 0   # the only track
@@ -48,34 +56,73 @@ def midiMaker ():
 
 
     # write it to disk
-    rawName =input("Give a name for the file: ")
-    fileName = rawName + ".mid"
-    outFile = "processing/"+fileName
+    funcRawName =input("Give a name for the file: ")
+    funcFileName = funcRawName + ".mid"
+    outFile = tempHome +"/"+funcFileName
     with open(outFile, 'wb') as outf:
         mf.writeFile(outf)
-    return rawName
+    return funcRawName
 
-def pdfMaker(rawName, fileName):
-    toLY = "cd LilyPond/usr/bin/ &&  py midi2ly --output="
-    lyOut = '"C:/Users/Eddie/PycharmProjects/MidiCreator/processing" ' #need universal
-    lyIN = '"' "C:/Users/Eddie/PycharmProjects/MidiCreator/processing/" + fileName + '"' #need universal
+def pdfMaker(rawName, fileName, tempHome, docsHome):
+
+    toLilY = "cd LilyPond/usr/bin/ &&  py midi2ly --output="
+    lilyOut = '"' + tempHome + '" '
+
+    lilyIN = ' "' + tempHome + '/' + fileName + '"'
 
     alterName = rawName + "-midi.ly"
 
     toPDF = "cd LilyPond/usr/bin/ &&  lilypond --output="
-    #pdfOut = '"C:/Users/Eddie/PycharmProjects/MidiCreator/Final PDFs" ' #Old Code
-    pdfOut = '"' + docsHome + '" '
-    pdfIN = '"' "C:/Users/Eddie/PycharmProjects/MidiCreator/processing/" + alterName + '"' #need universal
 
-    stream = os.popen(toLY + lyOut +lyIN)
+    pdfOut = '"' + docsHome + '" '
+    pdfIN = ' "' + tempHome+'/' + alterName + '"'
+    # those past ten lines are UGLY but it works
+
+    stream = os.popen(toLilY + lilyOut +lilyIN)
     output = stream.read()
-    print (output)
+    print(output)
 
     stream = os.popen(toPDF + pdfOut + pdfIN)
     output = stream.read()
-    print (output)
+    print(output)
 
-docsHome = pathMaker()
-rawName = midiMaker()
-fileName = rawName + ".mid"
-pdfMaker(rawName, fileName)
+def startup():
+    menu = ('(1) Create the default Midi and pdf file\n'
+            '(2) Create some random music\n'
+            '(3) Covert your mid/midi file into a PDF\n'
+            '(4) (nothing)\n'
+            '(5) (nothing)\n'
+            '(6) Exit.\n\n'
+            'Enter Command:')
+
+    userInput = input(menu)
+
+
+    while userInput != '6':
+        if userInput == '1':
+            # print('hi')
+            docsHome = pathMaker()
+            tempHome = os.path.join(docsHome, 'temp files')
+            rawName = midiMaker(tempHome)
+            fileName = rawName + ".mid"
+            pdfMaker(rawName, fileName, tempHome, docsHome)
+            print("Done.")
+        if userInput == '2':
+            print("fuck you")
+        if userInput == '3':
+            print("fuck you")
+        if userInput == '4':
+            print("fuck you")
+        if userInput == '5':
+            print("fuck you")
+        userInput = input('\nEnter command: ')
+    print('Goodbye')
+
+startup()
+
+
+# docsHome = pathMaker()
+# tempHome = os.path.join(docsHome, 'temp files')
+# rawName = midiMaker()
+# fileName = rawName + ".mid"
+# pdfMaker(rawName, fileName)
